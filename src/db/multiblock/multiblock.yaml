@@ -1,0 +1,48 @@
+
+double_chest:
+  function: storage
+  assembly:
+    - [chest, chest]
+  place:
+    restrict: not_adjacent
+  store:
+    - slots: 54
+      capacity: stack
+
+
+tinker_furnace:
+  function: smelting
+  fuel: lava
+  capacity: ?
+  shape:
+    kind: cuboid
+    modifiers: [hollow]
+    block: seared_block
+  special:
+    - name: furnace_controller
+      placement: side
+      function: [input, output]
+    - name: tank
+      placement: [side, edge]
+      function: fuel
+
+
+tinker_smeltery:
+  function: smelting
+  fuel: lava
+  capacity: ?
+  special: [ore_doubling, alloying]
+  parts:
+    - shape: cuboid
+      modifiers: [frameless, open_top, hollow]
+      block: seared_block
+      replace:
+        - name: furnace_controller
+          function: control
+          where: side
+        - name: tank
+          function: fuel
+          where: side
+        - name: drain
+          function: output
+          where: side

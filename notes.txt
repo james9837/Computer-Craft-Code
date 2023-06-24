@@ -1,0 +1,176 @@
+
+ ~/.ftba/instances/f30e8a6a-be2f-4f5a-a1da-d643e78414ef/saves/First Survival World/computer
+
+TODO:
+- crafting system
+    - crafting plan
+    - linked BOM
+
+Next TODO:
+- better bot layer
+     - waypoint system
+        - replace existing navigation
+        - can be used for all movement?
+    - track stats
+        - item inspection
+        - item movement - kept, thrown out, etc
+        - lava, water, etc
+        - track any lava encountered
+        - track # steps
+
+Modules:
+- inventory system
+- building system
+- mining system
+    - split up mine-able volume into regions
+    - track mining status of regions
+    - keep regions small-ish?
+        - 1/2 or 1/4 chunk horizontal
+        - x vertical segments
+            - just 3? high, med, deep - basically divides kinds of resources
+            - 3-15 - deep - diamonds, redstone
+            - 16-30 - gold, emerald, lapis
+            - 31-60 - iron, coal
+    - list of desired materials - based on goals - determine vertical range from it
+
+- fuel farm
+    - tree spacing
+    - number of trees per row
+    - number of rows of trees
+    - number of levels
+    - kinds of trees
+    - smelting area
+    - storage area
+        - saplings
+        - building materials
+        - tree product
+        - intermediate fuel
+        - finished fuel
+
+- processes:
+    - location validation
+    - fuel monitoring
+    - sync @ core scheduling
+
+
+
+Goal-Driven AI
+- goal is to replicate
+    - to replicate, certain needs must be met
+    - materials -> activity -> farm, mining, etc
+    - based on activity, certain infrastructure is needed
+        - ex: to go mining deep, fuel is needed
+        - ex: to get fuel of x, a farm of x size is needed
+        - ex: mine of x size requires y storage
+        - ex: storage needs of x -> central warehouse
+
+- population or resource thresholds determine extras
+    - min requirements before additional non-required builds can happen
+    -
+
+- determining plan...
+    - next replication goal -> material needs
+    - material needs -> activity needs (wood farm, mining)
+    - activity needs ->
+
+
+
+Tiers - not a distinct thing
+    - drive goals from population + preferences
+
+:Auto-Gen Tiers
+- use seed + player input to control generation
+- tier is an integer, starting at 1
+- population requirement for tiers is tier*2
+    - so to get into tier2, 2 turtles are needed
+    - population counts? turtles only or computers too??
+- turtle fuel requirement: tier*1000 + tier*2000 reserve
+- location assignment
+    - ranked in order of need - 10 is essential, 1 is never needed
+    - player choice can affect this (?)
+    - scores:
+        - essentiality
+        - player focus
+        - -other-?
+- material assignment
+    - materials ranked on
+        - looks
+        - durability
+- location layout
+    - ask player about area to use?
+    - ask player about coordinates
+    - carve out for player (?)
+        - do turtles build things in the carve out or is it left
+          up to the player??
+    - config for turtle infrastructure being subterranian?
+    - map locations around - leaving ample space between
+        - location re-mapping - starting out, the fuel farm and mine
+            are probably one location, but should be split out later on
+            with each having their own main location, storage, etc
+
+Expeditions:
+- turtles setup to be a team with some resources
+- ask player to take them somewhere and...
+    - chunkload the area
+    - or the turtles should be armed with a few chunkloaders
+- the expeditions are for resource gathering  (and fun)
+
+Todo:
+- Turtle
+    - Tree Farm
+    - Crafting
+    - Land Shaping
+    - Building
+    - Waypoint system
+    - Shipping
+
+- Plans for:
+    - fuel farm (tree farm + charcoal manufacturing)
+    - mine
+    - core
+    - warehouse
+    - fort
+    - agriculture
+        - wheat
+        - barley
+        - pumpkin
+        - melon
+        - other
+    - player food farm
+    - player store
+    - player home
+    - workshop (crafting area)
+        - bot birthing area
+    - Blacksmith
+    - lake/aquarium
+    - mob farm
+
+- Locations
+    - the function assigned to an area
+- Structures
+    - the buildings or installations that make an area able to perform
+        its function
+
+- First turtle becomes the overseer
+    - main plan
+    - tracks defined locations
+    - decides population and jobs
+    - transfer itself to a computer at some point?
+        - write the current status and program to a computer
+        - re-write its own startup file
+        - reboot computer
+        - verify computer is overseer
+        - reboot self
+        - turtle is now the 'main minion' of the computer
+
+- Other turtles must report-in periodically (?)
+    -> core
+    -> disk drives? (pre-rednet)
+
+
+- Overseer State Machine
+    - on Entering a tier
+        - plan out base design - goal
+        - plan base update
+        -
+
