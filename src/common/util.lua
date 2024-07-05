@@ -1,37 +1,36 @@
 
-require('common/class')
-
 --------------------------------------------------------------------------------
 -- some basic whole-file read/write wrappers
 --
-write_file = function(file_path, content)
+file = {
+    write = function(file_path, content)
 
-    local startup_file = io.open(file_path, 'w')
+        local startup_file = io.open(file_path, 'w')
 
-    local success, errmsg = startup_file:write(content)
+        local success, errmsg = startup_file:write(content)
 
-    local err = success == nil
+        local err = success == nil
 
-    if err then
-        print('Could not write to file:'..file_path)
-    end
+        if err then
+            print('Could not write to file:'..file_path)
+        end
 
-    startup_file:flush()
-    startup_file:close()
+        startup_file:flush()
+        startup_file:close()
 
-    return err
-end
+        return err
+    end,
 
-read_file = function(file_path)
-    if not fs.exists(file_path) then
-        return
-    end
-    local file = io.open(file_path, 'r')
-    local data = file:read('a')
-    file:close()
-    return data
-end
-
+    read = function(file_path)
+        if not fs.exists(file_path) then
+            return
+        end
+        local file = io.open(file_path, 'r')
+        local data = file:read('a')
+        file:close()
+        return data
+    end,
+}
 
 
 --------------------------------------------------------------------------------
@@ -45,19 +44,21 @@ nvm = {
             fs.move(file_path, file_path..'.bak')
         end
         local var_txt = textutils.serialize(data)
-        return write_file(file_path, var_txt)
+        return file.write(file_path, var_txt)
     end,
+
     reset = function(file_path)
         if fs.exists(file_path) then
             fs.delete(file_path)
         end
     end,
+
     load = function(file_path)
         local from_backup = false
-        local data = read_file(file_path)
+        local data = file.read(file_path)
         if data == nil or data == '' then
             from_backup = true
-            data = read_file(file_path..'.bak')
+            data = file.read(file_path..'.bak')
             if data == nil or data == '' then
                 return
             end
@@ -65,7 +66,6 @@ nvm = {
         return from_backup, textutils.unserialize(data)
     end,
 }
-
 
 
 --------------------------------------------------------------------------------
@@ -79,147 +79,153 @@ function yield()
 end
 
 
-
 --------------------------------------------------------------------------------
--- Point class
-Point = class()
-function Point:init(x,y,z)
-    self.x = x or 0
-    self.y = y or 0
-    self.z = z or 0
+-- Point class (immutable)
+--
+function Point3D(x,y,z)
+    data = {
+        --- values
+        x = x,
+        y = y,
+        z = z,
+    }
+
+    return {
+        values = function()
+            return {
+                x = data.x,
+                y = data.y,
+                z = data.z,
+            }
+        end,
+
+        --- simple distance function
+        distance_to = function(p)
+            return math.abs(data.x - p.x) +
+                    math.abs(data.y - p.y) +
+                    math.abs(data.z - p.z)
+    }
 end
-
-function Point:distance_to(p)
-    return math.abs(self.x - p.x) +
-            math.abs(self.y - p.y) +
-            math.abs(self.z - p.z)
-end
-
-
-
 
 
 --------------------------------------------------------------------------------
 -- Callback Class
 --   allows for easy and flexible sub/pub patterns
 --
-CallbackList = class()
-function CallbackList:init()
-    self.functions = {}
-end
+function Callbacks()
+    functions = {}
 
-function CallbackList:__call()
-    for _,func in ipairs(self.functions) do
-        func()
-    end
-end
+    return {
+        add = function(func)
+            table.insert(functions, func)
+        end,
 
-function CallbackList:add(func)
-    table.insert(self.functions, func)
+        call = function()
+            for _,func in ipairs(functions) do
+                func()
+            end
+        end,
+    }
 end
-
 
 
 --------------------------------------------------------------------------------
 -- Set class
 --  - also can return maps with distributions (counts) of elements added
 --
-CountingSet = class()
-function CountingSet:init(members)
-    self._data = {}
-    for i, v in ipairs(vals) do
-        self:add(v)
-    end
-end
+function CountingSet()
+    data = {}
 
-function CountingSet:add(val, qty)
-    local _qty = qty or 1
-    if self._data[val] == nil then
-        self._data[val] = _qty
-    else
-        self._data[val] = self._data[val] + _qty
-    end
-    return self._data[val]
-end
+    function _add_f(val, qty)
+        local _qty = qty or 1
 
-function CountingSet:get(val)
-    return self._data[val]
-end
+        if data[val] == nil then
+            data[val] = 0
+        else
 
-function CountingSet:to_map()
-    local l = {}
-    for k, v in pairs(self._data) do
-        l[k] = v
+        new_val = data[val] + _qty
+        data[val] = new_val
+        return new_val
     end
-    return l
-end
 
-function CountingSet:to_list()
-    local l = {}
-    for k, v in pairs(self._data) do
-        table.insert(l, k)
-    end
-    return l
+    return {
+        init = function(members)
+            for i, v in ipairs(vals) do
+                _add_f(v)
+            end
+        end,
+
+        add = _add_f,
+
+        get = function(val)
+            return data[val]
+        end,
+
+        to_map = function()
+            local l = {}
+            for k, v in pairs(data) do
+                l[k] = v
+            end
+            return l
+        end,
+
+        to_list = function()
+            local l = {}
+            for k, v in pairs(data) do
+                table.insert(l, k)
+            end
+            return l
+        end,
+    }
 end
 
 
 --------------------------------------------------------------------------------
 -- Stack LIFO - Last-in First-out
---
-LifoStack = class()
-function LifoStack:init()
-    self._data = {}
-end
+function Lifo()
+    data = {}
 
-function LifoStack:push(item)
-    table.insert(self._data, item)
-end
+    return {
+        push = function(item)
+            table.insert(data, item)
+        end,
 
-function LifoStack:pop()
-    local item = self._data[#self._data]
-    table.remove(self._data)
-    return item
-end
+        pop  = function(item)
+            return table.remove(data)
+        end,
 
-function LifoStack:peek()
-    return self._data[#self._data]
-end
+        is_empty = function()
+            return #data == 0
+        end,
 
-function LifoStack:is_empty()
-    return #self._data == 0
-end
-
-function LifoStack:getn()
-    return #self._data
+        len = function()
+            return #data
+        end,
+    }
 end
 
 
 --------------------------------------------------------------------------------
 -- Stack FIFO - First-in First-out
 --
-FifoStack = class()
-function FifoStack:init()
-    self._data = {}
-end
+function Fifo()
+    data = {}
 
-function FifoStack:push(item)
-    table.insert(self._data, item)
-end
+    return {
+        push = function(item)
+            table.insert(data, item)
+        end,
 
-function FifoStack:pop()
-    local item = self._data[1]
-    table.remove(self._data, 1)
-    return item
-end
+        pop  = function(item)
+            return table.remove(data,1)
+        end,
 
-function FifoStack:peek()
-    return self._data[1]
-end
+        is_empty = function()
+            return #data == 0
+        end,
 
-function FifoStack:is_empty()
-    return #self._data == 0
-end
-
-function FifoStack:getn()
-    return #self._data
+        len = function()
+            return #data
+        end,
+    }
 end
