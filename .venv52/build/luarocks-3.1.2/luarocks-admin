@@ -1,3 +1,0 @@
-#!/bin/sh
-unset LUA_PATH LUA_PATH_5_2 LUA_PATH_5_3 LUA_PATH_5_4
-LUAROCKS_SYSCONFDIR="/home/david/Projects/software/computercraft/.venv52/luarocks" LUA_PATH="/home/david/Projects/software/computercraft/.venv52/build/luarocks-3.1.2/src/?.lua;;" exec "/home/david/Projects/software/computercraft/.venv52/bin/lua" "/home/david/Projects/software/computercraft/.venv52/build/luarocks-3.1.2/src/bin/luarocks-admin" --project-tree="/home/david/Projects/software/computercraft/.venv52/build/luarocks-3.1.2/lua_modules" "$@"
